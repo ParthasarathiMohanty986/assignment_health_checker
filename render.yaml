@@ -1,9 +1,3 @@
-databases:
-  - name: assignment-health-db
-    plan: free
-    databaseName: assignment_health
-    user: assignment_health
-
 services:
   - type: web
     name: assignment-health
@@ -19,10 +13,6 @@ services:
         value: "0"
       - key: DJANGO_SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: assignment-health-db
-          property: connectionString
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL

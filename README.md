@@ -38,7 +38,7 @@ Use a model enabled for your API project. Keys remain server-side; never commit 
 
 This MVP does not include OCR, LLM-generated checks, arbitrary student-code execution, authenticated endpoint adapters, POST submissions, semantic grading, schedulers, or automatic repairs. Scanned PDFs get an explicit OCR-needed message. Response checks are syntactic, not proof that an assignment is pedagogically correct. A successful GET alone does not prove a workflow works. HTTP 401/403/429 and network failures are reported as unverified.
 
-Uploaded original PDFs are not retained. Extracted text, expectations, results, and suggestions are stored in local SQLite. Do not deploy this local configuration unchanged: provision production users, HTTPS, secrets, database backup/persistence, application/worker limits, upload scanning/resource isolation and network egress controls before accepting untrusted public uploads. Run checks in background workers before scaling beyond a small pilot.
+Uploaded original PDFs are not retained. Extracted text, expectations, results, and suggestions are stored in SQLite. On Render's free web service, the SQLite file is on ephemeral storage and can be lost when the service restarts or is redeployed. Export any data you need to keep; this setup is suitable only when that data-loss risk is acceptable. Before accepting untrusted public uploads, also provision production users, HTTPS, secrets, application/worker limits, upload scanning/resource isolation and network egress controls. Run checks in background workers before scaling beyond a small pilot.
 
 ## Verification
 
@@ -58,8 +58,8 @@ Inspired by Anand's public account of assignment dependencies changing: https://
 
 ## Render deployment
 
-Create a separate GitHub repository for this directory, then create a Render Blueprint from that repository using render.yaml. The blueprint uses a free web service and a free PostgreSQL database. Free Render PostgreSQL expires after 30 days; upgrade or export your data before expiry. Local SQLite data is not uploaded.
+Create a separate GitHub repository for this directory, then create a Render Blueprint from that repository using render.yaml. The blueprint creates a free web service and uses SQLite, so it does not require a Render PostgreSQL database or a free database slot. The SQLite database is stored on Render's ephemeral filesystem and may be erased when the service restarts or is redeployed; back up or export data you need to retain.
 
-During setup, enter GROQ_API_KEY, INSTRUCTOR_USERNAME, and INSTRUCTOR_PASSWORD (at least 12 characters) in Render, not GitHub. The build creates the initial instructor once and never resets an existing account password. Sign in using those credentials. Public registration is not implemented. The local workspace shortcut is disabled in production.
+During setup, enter GROQ_API_KEY, INSTRUCTOR_USERNAME, and INSTRUCTOR_PASSWORD (at least 12 characters) in Render, not GitHub. The build creates the initial instructor if it does not exist and never resets an existing account password. Because a redeploy may start with a fresh SQLite database, the configured credentials can be used to recreate the account. Sign in using those credentials. Public registration is not implemented. The local workspace shortcut is disabled in production.
 
-The build installs dependencies, collects static files, migrates PostgreSQL, and creates the initial account. Gunicorn serves the app. Render supplies the hostname and database URL; a Django secret is generated automatically. Use HTTPS. See https://render.com/docs/deploy-django and https://render.com/docs/free.
+The build installs dependencies, collects static files, migrates SQLite, and creates the initial account. Gunicorn serves the app. Render supplies the hostname; a Django secret is generated automatically. Use HTTPS. See https://render.com/docs/deploy-django and https://render.com/docs/free.

@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env', override=False)
 DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
@@ -17,10 +16,6 @@ MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'whitenoise.middl
 ROOT_URLCONF = 'config.urls'
 TEMPLATES = [{'BACKEND':'django.template.backends.django.DjangoTemplates','DIRS':[],'APP_DIRS':True,'OPTIONS':{'context_processors':['django.template.context_processors.request','django.contrib.auth.context_processors.auth','django.contrib.messages.context_processors.messages']}}]
 DATABASES = {'default':{'ENGINE':'django.db.backends.sqlite3','NAME':BASE_DIR/'db.sqlite3'}}
-if os.environ.get('DATABASE_URL'):
-    DATABASES['default'] = dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=60, conn_health_checks=True)
-elif not DEBUG:
-    raise RuntimeError('Set DATABASE_URL for persistent production storage.')
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR/'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
