@@ -1,0 +1,33 @@
+databases:
+  - name: assignment-health-db
+    plan: free
+    databaseName: assignment_health
+    user: assignment_health
+
+services:
+  - type: web
+    name: assignment-health
+    runtime: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120
+    healthCheckPath: /login/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: DJANGO_DEBUG
+        value: "0"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: assignment-health-db
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+      - key: INSTRUCTOR_USERNAME
+        sync: false
+      - key: INSTRUCTOR_PASSWORD
+        sync: false
