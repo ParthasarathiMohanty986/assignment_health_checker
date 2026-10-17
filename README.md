@@ -63,3 +63,10 @@ Create a separate GitHub repository for this directory, then create a Render Blu
 During setup, enter GROQ_API_KEY, INSTRUCTOR_USERNAME, and INSTRUCTOR_PASSWORD (at least 12 characters) in Render, not GitHub. The build creates the initial instructor if it does not exist and never resets an existing account password. Because a redeploy may start with a fresh SQLite database, the configured credentials can be used to recreate the account. Sign in using those credentials. Public registration is not implemented. The local workspace shortcut is disabled in production.
 
 The build installs dependencies, collects static files, migrates SQLite, and creates the initial account. Gunicorn serves the app. Render supplies the hostname; a Django secret is generated automatically. Use HTTPS. See https://render.com/docs/deploy-django and https://render.com/docs/free.
+
+
+## Temporary guest access
+
+The home page now opens a separate guest workspace per browser session. No sign-in or instructor bootstrap is required. Existing authenticated sessions keep their assignments. Guest accounts have no usable password; clearing cookies or session expiry loses access to the workspace. Login/local-login/logout URLs redirect home. The health-check URL is /health/ and does not create accounts. Public visitors can use the configured Groq quota. This is temporary demo access, not account recovery or public registration.
+
+The current deployment uses SQLite. On Render's ephemeral filesystem, assignments and sessions can be lost during restart or redeploy; use a persistent database before relying on stored data.

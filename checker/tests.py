@@ -93,7 +93,7 @@ class WorkflowTests(TestCase):
             self.client.post(f'/runs/{run.pk}/suggest/');suggest.assert_not_called()
     @override_settings(DEBUG=False)
     def test_local_login_disabled_in_production(self):
-        self.client.logout();self.assertEqual(self.client.post('/local-login/').status_code,403)
+        self.client.logout();self.assertRedirects(self.client.post('/local-login/'), '/', fetch_redirect_response=False)
 
 class AITests(SimpleTestCase):
     def test_payload_excludes_urls_and_source(self):
@@ -106,3 +106,23 @@ class AITests(SimpleTestCase):
         post.return_value.json.return_value={'choices':[{'finish_reason':'stop','message':{'content':'Confirm the dataset schema.'}}]}
         self.assertEqual(ai.suggest_fixes([]),'Confirm the dataset schema.')
         self.assertEqual(post.call_args.args[0],'https://api.groq.com/openai/v1/chat/completions')
+
+
+class GuestWorkspaceTests(TestCase):
+    def test_guest_entry_and_isolation(self):
+        from django.test import Client
+        first, second = Client(), Client()
+        self.assertEqual(first.get('/').status_code, 200)
+        owner_id = first.session['_auth_user_id']
+        assignment = Assignment.objects.create(owner_id=owner_id, title='Private guest assignment')
+        self.assertEqual(first.get(f'/assignments/{assignment.pk}/').status_code, 200)
+        self.assertEqual(second.get('/').status_code, 200)
+        self.assertNotEqual(owner_id, second.session['_auth_user_id'])
+        self.assertEqual(second.get(f'/assignments/{assignment.pk}/').status_code, 404)
+        first.get('/')
+        self.assertEqual(first.session['_auth_user_id'], owner_id)
+        self.assertFalse(get_user_model().objects.get(pk=owner_id).has_usable_password())
+
+    def test_health_does_not_create_guests(self):
+        self.assertEqual(self.client.get('/health/').status_code, 200)
+        self.assertEqual(get_user_model().objects.count(), 0)

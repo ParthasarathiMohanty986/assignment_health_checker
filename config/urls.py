@@ -1,7 +1,9 @@
 from django.urls import path
+from django.http import HttpResponse
 from django.contrib.auth import views as auth
 from checker import views
 urlpatterns = [
+    path('health/', lambda request: HttpResponse('ok')), 
     path('local-login/',views.local_login,name='local_login'),
     path('login/',auth.LoginView.as_view(template_name='checker/login.html'),name='login'),
     path('logout/',auth.LogoutView.as_view(),name='logout'),

@@ -5,7 +5,7 @@ services:
     plan: free
     buildCommand: bash build.sh
     startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120
-    healthCheckPath: /login/
+    healthCheckPath: /health/
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.10
@@ -17,7 +17,3 @@ services:
         sync: false
       - key: GROQ_MODEL
         value: openai/gpt-oss-20b
-      - key: INSTRUCTOR_USERNAME
-        sync: false
-      - key: INSTRUCTOR_PASSWORD
-        sync: false
